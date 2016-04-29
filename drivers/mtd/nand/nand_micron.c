@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 
 struct nand_onfi_vendor_micron {
 	u8 two_plane_read;

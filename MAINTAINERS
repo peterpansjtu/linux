@@ -8608,7 +8608,7 @@ Q:	http://patchwork.ozlabs.org/project/linux-mtd/list/
 T:	git git://github.com/linux-nand/linux.git
 S:	Maintained
 F:	drivers/mtd/nand/
-F:	include/linux/mtd/nand*.h
+F:	include/linux/mtd/*nand*.h
 
 NATSEMI ETHERNET DRIVER (DP8381x)
 S:	Orphan
