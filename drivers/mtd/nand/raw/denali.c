@@ -74,7 +74,7 @@ MODULE_PARM_DESC(onfi_timing_mode,
  */
 static inline struct denali_nand_info *mtd_to_denali(struct mtd_info *mtd)
 {
-	return container_of(mtd_to_nand(mtd), struct denali_nand_info, nand);
+	return container_of(mtd_to_nandchip(mtd), struct denali_nand_info, nand);
 }
 
 /*
@@ -1357,7 +1357,7 @@ static int denali_ooblayout_ecc(struct mtd_info *mtd, int section,
 				struct mtd_oob_region *oobregion)
 {
 	struct denali_nand_info *denali = mtd_to_denali(mtd);
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (section)
 		return -ERANGE;
@@ -1372,7 +1372,7 @@ static int denali_ooblayout_free(struct mtd_info *mtd, int section,
 				 struct mtd_oob_region *oobregion)
 {
 	struct denali_nand_info *denali = mtd_to_denali(mtd);
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (section)
 		return -ERANGE;
@@ -1487,7 +1487,7 @@ static int denali_multidev_fixup(struct denali_nand_info *denali)
 int denali_init(struct denali_nand_info *denali)
 {
 	struct nand_chip *chip = &denali->nand;
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&denali->nand);
 	int ret;
 
 	if (denali->platform == INTEL_CE4100) {
@@ -1647,7 +1647,7 @@ EXPORT_SYMBOL(denali_init);
 /* driver exit point */
 void denali_remove(struct denali_nand_info *denali)
 {
-	struct mtd_info *mtd = nand_to_mtd(&denali->nand);
+	struct mtd_info *mtd = nandchip_to_mtd(&denali->nand);
 	/*
 	 * Pre-compute DMA buffer size to avoid any problems in case
 	 * nand_release() ever changes in a way that mtd->writesize and

@@ -184,7 +184,7 @@ struct omap_nand_info {
 
 static inline struct omap_nand_info *mtd_to_omap(struct mtd_info *mtd)
 {
-	return container_of(mtd_to_nand(mtd), struct omap_nand_info, nand);
+	return container_of(mtd_to_nandchip(mtd), struct omap_nand_info, nand);
 }
 
 /**
@@ -279,7 +279,7 @@ static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
  */
 static void omap_read_buf8(struct mtd_info *mtd, u_char *buf, int len)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
+	struct nand_chip *nand = mtd_to_nandchip(mtd);
 
 	ioread8_rep(nand->IO_ADDR_R, buf, len);
 }
@@ -313,7 +313,7 @@ static void omap_write_buf8(struct mtd_info *mtd, const u_char *buf, int len)
  */
 static void omap_read_buf16(struct mtd_info *mtd, u_char *buf, int len)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
+	struct nand_chip *nand = mtd_to_nandchip(mtd);
 
 	ioread16_rep(nand->IO_ADDR_R, buf, len / 2);
 }
@@ -944,7 +944,7 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
 static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 {
 	struct omap_nand_info *info = mtd_to_omap(mtd);
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	unsigned int dev_width = (chip->options & NAND_BUSWIDTH_16) ? 1 : 0;
 	u32 val;
 
@@ -990,7 +990,7 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
  */
 static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
 {
-	struct nand_chip *this = mtd_to_nand(mtd);
+	struct nand_chip *this = mtd_to_nandchip(mtd);
 	struct omap_nand_info *info = mtd_to_omap(mtd);
 	unsigned long timeo = jiffies;
 	int status, state = this->state;
@@ -1042,7 +1042,7 @@ static void __maybe_unused omap_enable_hwecc_bch(struct mtd_info *mtd, int mode)
 	unsigned int dev_width, nsectors;
 	struct omap_nand_info *info = mtd_to_omap(mtd);
 	enum omap_ecc ecc_opt = info->ecc_opt;
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	u32 val, wr_mode;
 	unsigned int ecc_size1, ecc_size0;
 
@@ -1757,7 +1757,7 @@ static const struct mtd_ooblayout_ops omap_ooblayout_ops = {
 static int omap_sw_ooblayout_ecc(struct mtd_info *mtd, int section,
 				 struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	int off = BADBLOCK_MARKER_LENGTH;
 
 	if (section >= chip->ecc.steps)
@@ -1776,7 +1776,7 @@ static int omap_sw_ooblayout_ecc(struct mtd_info *mtd, int section,
 static int omap_sw_ooblayout_free(struct mtd_info *mtd, int section,
 				  struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	int off = BADBLOCK_MARKER_LENGTH;
 
 	if (section)
@@ -1851,7 +1851,7 @@ static int omap_nand_probe(struct platform_device *pdev)
 	}
 
 	nand_chip		= &info->nand;
-	mtd			= nand_to_mtd(nand_chip);
+	mtd			= nandchip_to_mtd(nand_chip);
 	mtd->dev.parent		= &pdev->dev;
 	nand_chip->ecc.priv	= NULL;
 	nand_set_flash_node(nand_chip, dev->of_node);
@@ -2180,7 +2180,7 @@ return_error:
 static int omap_nand_remove(struct platform_device *pdev)
 {
 	struct mtd_info *mtd = platform_get_drvdata(pdev);
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
+	struct nand_chip *nand_chip = mtd_to_nandchip(mtd);
 	struct omap_nand_info *info = mtd_to_omap(mtd);
 	if (nand_chip->ecc.priv) {
 		nand_bch_free(nand_chip->ecc.priv);

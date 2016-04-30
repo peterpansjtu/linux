@@ -39,7 +39,7 @@ struct nand_onfi_vendor_micron {
 
 static int micron_nand_setup_read_retry(struct mtd_info *mtd, int retry_mode)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	u8 feature[ONFI_SUBFEATURE_PARAM_LEN] = {retry_mode};
 
 	return chip->onfi_set_features(mtd, chip, ONFI_FEATURE_ADDR_READ_RETRY,
@@ -68,7 +68,7 @@ static int micron_nand_onfi_init(struct nand_chip *chip)
 
 static int micron_nand_init(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 	int ret;
 
 	ret = micron_nand_onfi_init(chip);

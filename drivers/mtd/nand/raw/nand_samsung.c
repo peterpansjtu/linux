@@ -19,7 +19,7 @@
 
 static void samsung_nand_decode_id(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 
 	/* New Samsung (6 byte ID): Samsung K9GAG08U0F (p.44) */
 	if (chip->id.len == 6 && !nand_is_slc(chip) &&
@@ -93,7 +93,7 @@ static void samsung_nand_decode_id(struct nand_chip *chip)
 
 static int samsung_nand_init(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 
 	if (mtd->writesize > 512)
 		chip->options |= NAND_SAMSUNG_LP_OPTIONS;

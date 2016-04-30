@@ -844,7 +844,7 @@ static inline bool is_hamming_ecc(struct brcmnand_controller *ctrl,
 static int brcmnand_hamming_ooblayout_ecc(struct mtd_info *mtd, int section,
 					  struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_cfg *cfg = &host->hwcfg;
 	int sas = cfg->spare_area_size << cfg->sector_size_1k;
@@ -862,7 +862,7 @@ static int brcmnand_hamming_ooblayout_ecc(struct mtd_info *mtd, int section,
 static int brcmnand_hamming_ooblayout_free(struct mtd_info *mtd, int section,
 					   struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_cfg *cfg = &host->hwcfg;
 	int sas = cfg->spare_area_size << cfg->sector_size_1k;
@@ -902,7 +902,7 @@ static const struct mtd_ooblayout_ops brcmnand_hamming_ooblayout_ops = {
 static int brcmnand_bch_ooblayout_ecc(struct mtd_info *mtd, int section,
 				      struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_cfg *cfg = &host->hwcfg;
 	int sas = cfg->spare_area_size << cfg->sector_size_1k;
@@ -920,7 +920,7 @@ static int brcmnand_bch_ooblayout_ecc(struct mtd_info *mtd, int section,
 static int brcmnand_bch_ooblayout_free_lp(struct mtd_info *mtd, int section,
 					  struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_cfg *cfg = &host->hwcfg;
 	int sas = cfg->spare_area_size << cfg->sector_size_1k;
@@ -946,7 +946,7 @@ static int brcmnand_bch_ooblayout_free_lp(struct mtd_info *mtd, int section,
 static int brcmnand_bch_ooblayout_free_sp(struct mtd_info *mtd, int section,
 					  struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_cfg *cfg = &host->hwcfg;
 	int sas = cfg->spare_area_size << cfg->sector_size_1k;
@@ -979,7 +979,7 @@ static const struct mtd_ooblayout_ops brcmnand_bch_sp_ooblayout_ops = {
 static int brcmstb_choose_ecc_layout(struct brcmnand_host *host)
 {
 	struct brcmnand_cfg *p = &host->hwcfg;
-	struct mtd_info *mtd = nand_to_mtd(&host->chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&host->chip);
 	struct nand_ecc_ctrl *ecc = &host->chip.ecc;
 	unsigned int ecc_level = p->ecc_level;
 	int sas = p->spare_area_size << p->sector_size_1k;
@@ -1018,7 +1018,7 @@ static int brcmstb_choose_ecc_layout(struct brcmnand_host *host)
 
 static void brcmnand_wp(struct mtd_info *mtd, int wp)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_controller *ctrl = host->ctrl;
 
@@ -1184,7 +1184,7 @@ static void brcmnand_cmd_ctrl(struct mtd_info *mtd, int dat,
 
 static int brcmnand_waitfunc(struct mtd_info *mtd, struct nand_chip *this)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_controller *ctrl = host->ctrl;
 	unsigned long timeo = msecs_to_jiffies(100);
@@ -1219,7 +1219,7 @@ static int brcmnand_low_level_op(struct brcmnand_host *host,
 				 enum brcmnand_llop_type type, u32 data,
 				 bool last_op)
 {
-	struct mtd_info *mtd = nand_to_mtd(&host->chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&host->chip);
 	struct nand_chip *chip = &host->chip;
 	struct brcmnand_controller *ctrl = host->ctrl;
 	u32 tmp;
@@ -1258,7 +1258,7 @@ static int brcmnand_low_level_op(struct brcmnand_host *host,
 static void brcmnand_cmdfunc(struct mtd_info *mtd, unsigned command,
 			     int column, int page_addr)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_controller *ctrl = host->ctrl;
 	u64 addr = (u64)page_addr << chip->page_shift;
@@ -1364,7 +1364,7 @@ static void brcmnand_cmdfunc(struct mtd_info *mtd, unsigned command,
 
 static uint8_t brcmnand_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 	struct brcmnand_controller *ctrl = host->ctrl;
 	uint8_t ret = 0;
@@ -1431,7 +1431,7 @@ static void brcmnand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 				   int len)
 {
 	int i;
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct brcmnand_host *host = nand_get_controller_data(chip);
 
 	switch (host->last_cmd) {
@@ -2028,7 +2028,7 @@ static inline int get_blk_adr_bytes(u64 size, u32 writesize)
 
 static int brcmnand_setup_dev(struct brcmnand_host *host)
 {
-	struct mtd_info *mtd = nand_to_mtd(&host->chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&host->chip);
 	struct nand_chip *chip = &host->chip;
 	struct brcmnand_controller *ctrl = host->ctrl;
 	struct brcmnand_cfg *cfg = &host->hwcfg;
@@ -2168,7 +2168,7 @@ static int brcmnand_init_cs(struct brcmnand_host *host, struct device_node *dn)
 		return -ENXIO;
 	}
 
-	mtd = nand_to_mtd(&host->chip);
+	mtd = nandchip_to_mtd(&host->chip);
 	chip = &host->chip;
 
 	nand_set_flash_node(chip, dn);
@@ -2314,7 +2314,7 @@ static int brcmnand_resume(struct device *dev)
 
 	list_for_each_entry(host, &ctrl->host_list, node) {
 		struct nand_chip *chip = &host->chip;
-		struct mtd_info *mtd = nand_to_mtd(chip);
+		struct mtd_info *mtd = nandchip_to_mtd(chip);
 
 		brcmnand_save_restore_cs_config(host, 1);
 
@@ -2546,7 +2546,7 @@ int brcmnand_remove(struct platform_device *pdev)
 	struct brcmnand_host *host;
 
 	list_for_each_entry(host, &ctrl->host_list, node)
-		nand_release(nand_to_mtd(&host->chip));
+		nand_release(nandchip_to_mtd(&host->chip));
 
 	clk_disable_unprepare(ctrl->clk);
 

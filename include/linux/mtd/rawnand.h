@@ -933,12 +933,12 @@ static inline struct device_node *nand_get_flash_node(struct nand_chip *chip)
 	return mtd_get_of_node(&chip->mtd);
 }
 
-static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
+static inline struct nand_chip *mtd_to_nandchip(struct mtd_info *mtd)
 {
 	return container_of(mtd, struct nand_chip, mtd);
 }
 
-static inline struct mtd_info *nand_to_mtd(struct nand_chip *chip)
+static inline struct mtd_info *nandchip_to_mtd(struct nand_chip *chip)
 {
 	return &chip->mtd;
 }

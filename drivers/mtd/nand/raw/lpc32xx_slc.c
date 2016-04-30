@@ -282,7 +282,7 @@ static void lpc32xx_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
 	unsigned int ctrl)
 {
 	uint32_t tmp;
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 
 	/* Does CE state need to be changed? */
@@ -306,7 +306,7 @@ static void lpc32xx_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
  */
 static int lpc32xx_nand_device_ready(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 	int rdy = 0;
 
@@ -361,7 +361,7 @@ static int lpc32xx_nand_ecc_calculate(struct mtd_info *mtd,
  */
 static uint8_t lpc32xx_nand_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 
 	return (uint8_t)readl(SLC_DATA(host->io_base));
@@ -372,7 +372,7 @@ static uint8_t lpc32xx_nand_read_byte(struct mtd_info *mtd)
  */
 static void lpc32xx_nand_read_buf(struct mtd_info *mtd, u_char *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 
 	/* Direct device read with no ECC */
@@ -385,7 +385,7 @@ static void lpc32xx_nand_read_buf(struct mtd_info *mtd, u_char *buf, int len)
  */
 static void lpc32xx_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 
 	/* Direct device write with no ECC */
@@ -450,7 +450,7 @@ static void lpc32xx_dma_complete_func(void *completion)
 static int lpc32xx_xmit_dma(struct mtd_info *mtd, dma_addr_t dma,
 			    void *mem, int len, enum dma_transfer_direction dir)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 	struct dma_async_tx_descriptor *desc;
 	int flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
@@ -510,7 +510,7 @@ out1:
 static int lpc32xx_xfer(struct mtd_info *mtd, uint8_t *buf, int eccsubpages,
 			int read)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct lpc32xx_nand_host *host = nand_get_controller_data(chip);
 	int i, status = 0;
 	unsigned long timeout;
@@ -736,7 +736,7 @@ static int lpc32xx_nand_write_page_raw_syndrome(struct mtd_info *mtd,
 
 static int lpc32xx_nand_dma_setup(struct lpc32xx_nand_host *host)
 {
-	struct mtd_info *mtd = nand_to_mtd(&host->nand_chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&host->nand_chip);
 	dma_cap_mask_t mask;
 
 	if (!host->pdata || !host->pdata->dma_filter) {
@@ -827,7 +827,7 @@ static int lpc32xx_nand_probe(struct platform_device *pdev)
 	host->pdata = dev_get_platdata(&pdev->dev);
 
 	chip = &host->nand_chip;
-	mtd = nand_to_mtd(chip);
+	mtd = nandchip_to_mtd(chip);
 	nand_set_controller_data(chip, host);
 	nand_set_flash_node(chip, pdev->dev.of_node);
 	mtd->owner = THIS_MODULE;
@@ -952,7 +952,7 @@ static int lpc32xx_nand_remove(struct platform_device *pdev)
 {
 	uint32_t tmp;
 	struct lpc32xx_nand_host *host = platform_get_drvdata(pdev);
-	struct mtd_info *mtd = nand_to_mtd(&host->nand_chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&host->nand_chip);
 
 	nand_release(mtd);
 	dma_release_channel(host->dma_chan);

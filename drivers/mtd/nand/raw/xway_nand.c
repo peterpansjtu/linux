@@ -71,7 +71,7 @@ struct xway_nand_data {
 
 static u8 xway_readb(struct mtd_info *mtd, int op)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct xway_nand_data *data = nand_get_controller_data(chip);
 
 	return readb(data->nandaddr + op);
@@ -79,7 +79,7 @@ static u8 xway_readb(struct mtd_info *mtd, int op)
 
 static void xway_writeb(struct mtd_info *mtd, int op, u8 value)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct xway_nand_data *data = nand_get_controller_data(chip);
 
 	writeb(value, data->nandaddr + op);
@@ -87,7 +87,7 @@ static void xway_writeb(struct mtd_info *mtd, int op, u8 value)
 
 static void xway_select_chip(struct mtd_info *mtd, int select)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct xway_nand_data *data = nand_get_controller_data(chip);
 
 	switch (select) {
@@ -170,7 +170,7 @@ static int xway_nand_probe(struct platform_device *pdev)
 		return PTR_ERR(data->nandaddr);
 
 	nand_set_flash_node(&data->chip, pdev->dev.of_node);
-	mtd = nand_to_mtd(&data->chip);
+	mtd = nandchip_to_mtd(&data->chip);
 	mtd->dev.parent = &pdev->dev;
 
 	data->chip.cmd_ctrl = xway_cmd_ctrl;
@@ -223,7 +223,7 @@ static int xway_nand_remove(struct platform_device *pdev)
 {
 	struct xway_nand_data *data = platform_get_drvdata(pdev);
 
-	nand_release(nand_to_mtd(&data->chip));
+	nand_release(nandchip_to_mtd(&data->chip));
 
 	return 0;
 }

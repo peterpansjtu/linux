@@ -67,7 +67,7 @@ struct hynix_read_retry_otp {
 
 static bool hynix_nand_has_valid_jedecid(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 	u8 jedecid[6] = { };
 	int i = 0;
 
@@ -80,7 +80,7 @@ static bool hynix_nand_has_valid_jedecid(struct nand_chip *chip)
 
 static int hynix_nand_setup_read_retry(struct mtd_info *mtd, int retry_mode)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct hynix_nand *hynix = nand_get_manufacturer_data(chip);
 	const u8 *values;
 	int status;
@@ -172,7 +172,7 @@ static int hynix_read_rr_otp(struct nand_chip *chip,
 			     const struct hynix_read_retry_otp *info,
 			     void *buf)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 	int i;
 
 	chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
@@ -365,7 +365,7 @@ static int hynix_nand_rr_init(struct nand_chip *chip)
 static void hynix_nand_extract_oobsize(struct nand_chip *chip,
 				       bool valid_jedecid)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 	u8 oobsize;
 
 	oobsize = ((chip->id.data[3] >> 2) & 0x3) |
@@ -543,7 +543,7 @@ static void hynix_nand_extract_scrambling_requirements(struct nand_chip *chip,
 
 static void hynix_nand_decode_id(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 	bool valid_jedecid;
 	u8 tmp;
 

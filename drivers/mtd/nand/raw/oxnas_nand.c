@@ -40,7 +40,7 @@ struct oxnas_nand_ctrl {
 
 static uint8_t oxnas_nand_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 
 	return readb(oxnas->io_base);
@@ -48,7 +48,7 @@ static uint8_t oxnas_nand_read_byte(struct mtd_info *mtd)
 
 static void oxnas_nand_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 
 	ioread8_rep(oxnas->io_base, buf, len);
@@ -56,7 +56,7 @@ static void oxnas_nand_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 
 static void oxnas_nand_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 
 	iowrite8_rep(oxnas->io_base, buf, len);
@@ -66,7 +66,7 @@ static void oxnas_nand_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 static void oxnas_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
 				unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 
 	if (ctrl & NAND_CLE)
@@ -126,7 +126,7 @@ static int oxnas_nand_probe(struct platform_device *pdev)
 		nand_set_flash_node(chip, nand_np);
 		nand_set_controller_data(chip, oxnas);
 
-		mtd = nand_to_mtd(chip);
+		mtd = nandchip_to_mtd(chip);
 		mtd->dev.parent = &pdev->dev;
 		mtd->priv = chip;
 
@@ -165,7 +165,7 @@ static int oxnas_nand_remove(struct platform_device *pdev)
 	struct oxnas_nand_ctrl *oxnas = platform_get_drvdata(pdev);
 
 	if (oxnas->chips[0])
-		nand_release(nand_to_mtd(oxnas->chips[0]));
+		nand_release(nandchip_to_mtd(oxnas->chips[0]));
 
 	clk_disable_unprepare(oxnas->clk);
 

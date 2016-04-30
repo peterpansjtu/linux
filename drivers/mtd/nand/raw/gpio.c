@@ -41,7 +41,7 @@ struct gpiomtd {
 
 static inline struct gpiomtd *gpio_nand_getpriv(struct mtd_info *mtd)
 {
-	return container_of(mtd_to_nand(mtd), struct gpiomtd, nand_chip);
+	return container_of(mtd_to_nandchip(mtd), struct gpiomtd, nand_chip);
 }
 
 
@@ -199,7 +199,7 @@ static int gpio_nand_remove(struct platform_device *pdev)
 {
 	struct gpiomtd *gpiomtd = platform_get_drvdata(pdev);
 
-	nand_release(nand_to_mtd(&gpiomtd->nand_chip));
+	nand_release(nandchip_to_mtd(&gpiomtd->nand_chip));
 
 	if (gpio_is_valid(gpiomtd->plat.gpio_nwp))
 		gpio_set_value(gpiomtd->plat.gpio_nwp, 0);
@@ -284,7 +284,7 @@ static int gpio_nand_probe(struct platform_device *pdev)
 	chip->chip_delay	= gpiomtd->plat.chip_delay;
 	chip->cmd_ctrl		= gpio_nand_cmd_ctrl;
 
-	mtd			= nand_to_mtd(chip);
+	mtd			= nandchip_to_mtd(chip);
 	mtd->dev.parent		= &pdev->dev;
 
 	platform_set_drvdata(pdev, gpiomtd);

@@ -207,7 +207,7 @@ static const struct s3c24XX_nand_devtype_data s3c2440_nand_devtype_data = {
 
 static struct s3c2410_nand_mtd *s3c2410_nand_mtd_toours(struct mtd_info *mtd)
 {
-	return container_of(mtd_to_nand(mtd), struct s3c2410_nand_mtd,
+	return container_of(mtd_to_nandchip(mtd), struct s3c2410_nand_mtd,
 			    chip);
 }
 
@@ -422,7 +422,7 @@ static void s3c2410_nand_select_chip(struct mtd_info *mtd, int chip)
 {
 	struct s3c2410_nand_info *info;
 	struct s3c2410_nand_mtd *nmtd;
-	struct nand_chip *this = mtd_to_nand(mtd);
+	struct nand_chip *this = mtd_to_nandchip(mtd);
 	unsigned long cur;
 
 	nmtd = nand_get_controller_data(this);
@@ -673,7 +673,7 @@ static int s3c2440_nand_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
 
 static void s3c2410_nand_read_buf(struct mtd_info *mtd, u_char *buf, int len)
 {
-	struct nand_chip *this = mtd_to_nand(mtd);
+	struct nand_chip *this = mtd_to_nandchip(mtd);
 	readsb(this->IO_ADDR_R, buf, len);
 }
 
@@ -695,7 +695,7 @@ static void s3c2440_nand_read_buf(struct mtd_info *mtd, u_char *buf, int len)
 static void s3c2410_nand_write_buf(struct mtd_info *mtd, const u_char *buf,
 				   int len)
 {
-	struct nand_chip *this = mtd_to_nand(mtd);
+	struct nand_chip *this = mtd_to_nandchip(mtd);
 	writesb(this->IO_ADDR_W, buf, len);
 }
 
@@ -784,7 +784,7 @@ static int s3c24xx_nand_remove(struct platform_device *pdev)
 
 		for (mtdno = 0; mtdno < info->mtd_count; mtdno++, ptr++) {
 			pr_debug("releasing mtd %d (%p)\n", mtdno, ptr);
-			nand_release(nand_to_mtd(&ptr->chip));
+			nand_release(nandchip_to_mtd(&ptr->chip));
 		}
 	}
 
@@ -801,7 +801,7 @@ static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
 				      struct s3c2410_nand_set *set)
 {
 	if (set) {
-		struct mtd_info *mtdinfo = nand_to_mtd(&mtd->chip);
+		struct mtd_info *mtdinfo = nandchip_to_mtd(&mtd->chip);
 
 		mtdinfo->name = set->name;
 
@@ -984,7 +984,7 @@ static int s3c2410_nand_update_chip(struct s3c2410_nand_info *info,
 		} else {
 			chip->ecc.size	    = 512;
 			chip->ecc.bytes	    = 3;
-			mtd_set_ooblayout(nand_to_mtd(chip),
+			mtd_set_ooblayout(nandchip_to_mtd(chip),
 					  &s3c2410_ooblayout_ops);
 		}
 
@@ -1157,7 +1157,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev)
 	nmtd = info->mtds;
 
 	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
-		struct mtd_info *mtd = nand_to_mtd(&nmtd->chip);
+		struct mtd_info *mtd = nandchip_to_mtd(&nmtd->chip);
 
 		pr_debug("initialising set %d (%p, info %p)\n",
 			 setno, nmtd, info);

@@ -82,7 +82,7 @@ struct fsl_elbc_fcm_ctrl {
 static int fsl_elbc_ooblayout_ecc(struct mtd_info *mtd, int section,
 				  struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 
 	if (section >= chip->ecc.steps)
@@ -100,7 +100,7 @@ static int fsl_elbc_ooblayout_ecc(struct mtd_info *mtd, int section,
 static int fsl_elbc_ooblayout_free(struct mtd_info *mtd, int section,
 				   struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 
 	if (section > chip->ecc.steps)
@@ -164,7 +164,7 @@ static struct nand_bbt_descr bbt_mirror_descr = {
  */
 static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
@@ -215,7 +215,7 @@ static void set_addr(struct mtd_info *mtd, int column, int page_addr, int oob)
  */
 static int fsl_elbc_run_command(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
@@ -320,7 +320,7 @@ static void fsl_elbc_do_read(struct nand_chip *chip, int oob)
 static void fsl_elbc_cmdfunc(struct mtd_info *mtd, unsigned int command,
                              int column, int page_addr)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
@@ -545,7 +545,7 @@ static void fsl_elbc_select_chip(struct mtd_info *mtd, int chip)
  */
 static void fsl_elbc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
 	unsigned int bufsize = mtd->writesize + mtd->oobsize;
@@ -583,7 +583,7 @@ static void fsl_elbc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
  */
 static u8 fsl_elbc_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
 
@@ -600,7 +600,7 @@ static u8 fsl_elbc_read_byte(struct mtd_info *mtd)
  */
 static void fsl_elbc_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
 	int avail;
@@ -639,7 +639,7 @@ static int fsl_elbc_wait(struct mtd_info *mtd, struct nand_chip *chip)
 
 static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 	struct fsl_elbc_mtd *priv = nand_get_controller_data(chip);
 	struct fsl_lbc_ctrl *ctrl = priv->ctrl;
 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
@@ -754,7 +754,7 @@ static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = ctrl->nand;
 	struct nand_chip *chip = &priv->chip;
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 
 	dev_dbg(priv->dev, "eLBC Set Information for bank %d\n", priv->bank);
 
@@ -809,7 +809,7 @@ static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
 static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
 {
 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
-	struct mtd_info *mtd = nand_to_mtd(&priv->chip);
+	struct mtd_info *mtd = nandchip_to_mtd(&priv->chip);
 
 	nand_release(mtd);
 
@@ -899,9 +899,9 @@ static int fsl_elbc_nand_probe(struct platform_device *pdev)
 		goto err;
 	}
 
-	mtd = nand_to_mtd(&priv->chip);
+	mtd = nandchip_to_mtd(&priv->chip);
 	mtd->name = kasprintf(GFP_KERNEL, "%llx.flash", (u64)res.start);
-	if (!nand_to_mtd(&priv->chip)->name) {
+	if (!nandchip_to_mtd(&priv->chip)->name) {
 		ret = -ENOMEM;
 		goto err;
 	}

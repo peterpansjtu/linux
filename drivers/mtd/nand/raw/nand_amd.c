@@ -19,7 +19,7 @@
 
 static void amd_nand_decode_id(struct nand_chip *chip)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mtd_info *mtd = nandchip_to_mtd(chip);
 
 	nand_decode_ext_id(chip);
 

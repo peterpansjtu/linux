@@ -45,7 +45,7 @@
 static int flctl_4secc_ooblayout_sp_ecc(struct mtd_info *mtd, int section,
 					struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (section)
 		return -ERANGE;
@@ -76,7 +76,7 @@ static const struct mtd_ooblayout_ops flctl_4secc_oob_smallpage_ops = {
 static int flctl_4secc_ooblayout_lp_ecc(struct mtd_info *mtd, int section,
 					struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (section >= chip->ecc.steps)
 		return -ERANGE;
@@ -90,7 +90,7 @@ static int flctl_4secc_ooblayout_lp_ecc(struct mtd_info *mtd, int section,
 static int flctl_4secc_ooblayout_lp_free(struct mtd_info *mtd, int section,
 					 struct mtd_oob_region *oobregion)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (section >= chip->ecc.steps)
 		return -ERANGE;
@@ -1164,7 +1164,7 @@ static int flctl_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, flctl);
 	nand = &flctl->chip;
-	flctl_mtd = nand_to_mtd(nand);
+	flctl_mtd = nandchip_to_mtd(nand);
 	nand_set_flash_node(nand, pdev->dev.of_node);
 	flctl_mtd->dev.parent = &pdev->dev;
 	flctl->pdev = pdev;
@@ -1229,7 +1229,7 @@ static int flctl_remove(struct platform_device *pdev)
 	struct sh_flctl *flctl = platform_get_drvdata(pdev);
 
 	flctl_release_dma(flctl);
-	nand_release(nand_to_mtd(&flctl->chip));
+	nand_release(nandchip_to_mtd(&flctl->chip));
 	pm_runtime_disable(&pdev->dev);
 
 	return 0;

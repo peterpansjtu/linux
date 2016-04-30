@@ -138,7 +138,7 @@ static void qi_lb60_nand_ident(struct platform_device *pdev,
 		struct mtd_info *mtd, struct mtd_partition **partitions,
 		int *num_partitions)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct nand_chip *chip = mtd_to_nandchip(mtd);
 
 	if (chip->page_shift == 12) {
 		*partitions = qi_lb60_partitions_2gb;
