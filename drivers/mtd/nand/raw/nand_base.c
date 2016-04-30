@@ -3878,6 +3878,43 @@ static bool find_full_id_nand(struct nand_chip *chip,
 	return false;
 }
 
+static int rawnand_erase(struct nand_device *nand, struct erase_info *einfo)
+{
+	struct mtd_info *mtd = nand_to_mtd(nand);
+
+	return nand_erase_nand(mtd, einfo, 1);
+}
+
+static int rawnand_markbad(struct nand_device *nand, int block)
+{
+	struct mtd_info *mtd = nand_to_mtd(nand);
+	struct nand_chip *chip = mtd_to_nandc(mtd);
+	loff_t offs = nand_eraseblock_to_offs(nand, block);
+
+	return chip->block_markbad(mtd, offs);
+}
+
+static const struct nand_ops rawnand_ops = {
+	.erase = rawnand_erase,
+	.markbad = rawnand_markbad,
+};
+
+static void nandc_fill_nandd(struct nand_chip *chip)
+{
+	struct mtd_info *mtd = nandc_to_mtd(chip);
+	struct nand_device *nand = mtd_to_nand(mtd);
+	struct nand_memory_organization *memorg = &nand->memorg;
+
+	memorg->pagesize = mtd->writesize;
+	memorg->oobsize = mtd->oobsize;
+	memorg->eraseblocksize = mtd->erasesize;
+	memorg->ndies = chip->numchips;
+	memorg->diesize = chip->chipsize;
+	/* TODO: fill ->planesize and ->nplanes */
+
+	nand->ops = &rawnand_ops;
+}
+
 /*
  * Manufacturer detection. Only used when the NAND is not ONFI or JEDEC
  * compliant and does not have a full-id or legacy-id entry in the nand_ids
@@ -4328,6 +4365,9 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips,
 	/* Store the number of chips and calc total size for mtd */
 	chip->numchips = i;
 	mtd->size = i * chip->chipsize;
+
+	/* Fill nand_device info */
+	nandc_fill_nandd(chip);
 
 	return 0;
 }
