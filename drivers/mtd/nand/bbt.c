@@ -1308,6 +1308,7 @@ err:
 	this->bbt.bbt = NULL;
 	return res;
 }
+EXPORT_SYMBOL_GPL(nand_scan_bbt);
 
 /**
  * nand_update_bbt - update bad block table(s)
@@ -1361,6 +1362,7 @@ int nand_update_bbt(struct nand_device *this, loff_t offs)
 	kfree(buf);
 	return res;
 }
+EXPORT_SYMBOL_GPL(nand_update_bbt);
 
 /**
  * nand_isreserved_bbt - [NAND Interface] Check if a block is reserved
@@ -1374,6 +1376,7 @@ int nand_isreserved_bbt(struct nand_device *this, loff_t offs)
 	block = nand_offs_to_eraseblock(this, offs);
 	return bbt_get_entry(this, block) == NAND_BBT_BLOCK_RESERVED;
 }
+EXPORT_SYMBOL_GPL(nand_isreserved_bbt);
 
 /**
  * nand_isbad_bbt - [NAND Interface] Check if a block is bad
@@ -1401,6 +1404,7 @@ int nand_isbad_bbt(struct nand_device *this, loff_t offs, int allowbbt)
 	}
 	return 1;
 }
+EXPORT_SYMBOL_GPL(nand_isbad_bbt);
 
 /**
  * nand_markbad_bbt - [NAND Interface] Mark a block bad in the BBT
@@ -1422,3 +1426,4 @@ int nand_markbad_bbt(struct nand_device *this, loff_t offs)
 
 	return ret;
 }
+EXPORT_SYMBOL_GPL(nand_markbad_bbt);
