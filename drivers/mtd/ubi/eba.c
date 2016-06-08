@@ -745,7 +745,6 @@ static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 	ubi_assert(vid_hdr->vol_type == UBI_VID_DYNAMIC);
 
 	mutex_lock(&ubi->buf_mutex);
-	ubi_buffer_memset()
 	memset(ubi->peb_buf + offset, 0xFF, len);
 
 	/* Read everything before the area where the write failure happened */

@@ -523,12 +523,12 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 	len = be32_to_cpu(vid_hdr->data_size);
 
 	mutex_lock(&ubi->buf_mutex);
-	err = ubi_io_buffer_read_data(ubi, ubi->peb_buf, pnum, 0, len);
+	err = ubi_io_read_data(ubi, ubi->peb_buf, pnum, 0, len);
 	if (err && err != UBI_IO_BITFLIPS && !mtd_is_eccerr(err))
 		goto out_unlock;
 
 	data_crc = be32_to_cpu(vid_hdr->data_crc);
-	crc = ubi_buffer_crc32(ubi, UBI_CRC32_INIT, ubi->peb_buf, len);
+	crc = crc32(UBI_CRC32_INIT, ubi->peb_buf, len);
 	if (crc != data_crc) {
 		dbg_bld("PEB %d CRC error: calculated %#08x, must be %#08x",
 			pnum, crc, data_crc);
@@ -888,10 +888,10 @@ static int check_corruption(struct ubi_device *ubi, struct ubi_vid_hdr *vid_hdr,
 	int err;
 
 	mutex_lock(&ubi->buf_mutex);
-	ubi_buffer_memset(ubi, ubi->peb_buf, 0x00, ubi->leb_size);
+	memset(ubi->peb_buf, 0x00, ubi->leb_size);
 
-	err = ubi_io_buffer_read(ubi, ubi->peb_buf, pnum, ubi->leb_start,
-				 ubi->leb_size);
+	err = ubi_io_read(ubi, ubi->peb_buf, pnum, ubi->leb_start,
+			  ubi->leb_size);
 	if (err == UBI_IO_BITFLIPS || mtd_is_eccerr(err)) {
 		/*
 		 * Bit-flips or integrity errors while reading the data area.
@@ -907,7 +907,7 @@ static int check_corruption(struct ubi_device *ubi, struct ubi_vid_hdr *vid_hdr,
 	if (err)
 		goto out_unlock;
 
-	if (ubi_buffer_check_pattern(ubi, ubi->peb_buf, 0xFF, ubi->leb_size))
+	if (ubi_check_pattern(ubi->peb_buf, 0xFF, ubi->leb_size))
 		goto out_unlock;
 
 	ubi_err(ubi, "PEB %d contains corrupted VID header, and the data does not contain all 0xFF",
@@ -916,11 +916,8 @@ static int check_corruption(struct ubi_device *ubi, struct ubi_vid_hdr *vid_hdr,
 	ubi_dump_vid_hdr(vid_hdr);
 	pr_err("hexdump of PEB %d offset %d, length %d",
 	       pnum, ubi->leb_start, ubi->leb_size);
-
 	ubi_dbg_print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 1,
-			       ubi->peb_buf->chunks[0],
-			       ubi->min_io_size, 1);
-
+			       ubi->peb_buf, ubi->leb_size, 1);
 	err = 1;
 
 out_unlock:
