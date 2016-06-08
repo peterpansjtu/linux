@@ -32,6 +32,7 @@
 #include <linux/spinlock.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <linux/crc32.h>
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/string.h>
@@ -649,7 +650,7 @@ struct ubi_device {
 	int max_write_size;
 	struct mtd_info *mtd;
 
-	void *peb_buf;
+	struct ubi_buffer *peb_buf;
 	struct mutex buf_mutex;
 	struct mutex ckvol_mutex;
 
@@ -862,6 +863,8 @@ int ubi_more_leb_change_data(struct ubi_device *ubi, struct ubi_volume *vol,
 			     const void __user *buf, int count);
 
 /* misc.c */
+void ubi_buffer_destroy(struct ubi_buffer *buf);
+struct ubi_buffer *ubi_buffer_create(struct ubi_device *ubi, int len);
 int ubi_calc_data_len(const struct ubi_device *ubi, const void *buf,
 		      int length);
 int ubi_check_volume(struct ubi_device *ubi, int vol_id);
@@ -925,6 +928,11 @@ int ubi_io_read(const struct ubi_device *ubi, void *buf, int pnum, int offset,
 		int len);
 int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 		 int len);
+int ubi_io_buffer_read(const struct ubi_device *ubi,
+		       const struct ubi_buffer *buf,
+		       int pnum, int offset, int len);
+int ubi_io_buffer_write(struct ubi_device *ubi, const struct ubi_buffer *buf,
+			int pnum, int offset, int len);
 int ubi_io_sync_erase(struct ubi_device *ubi, int pnum, int torture);
 int ubi_io_is_bad(const struct ubi_device *ubi, int pnum);
 int ubi_io_mark_bad(const struct ubi_device *ubi, int pnum);
@@ -1120,6 +1128,48 @@ static inline struct ubi_vid_hdr *ubi_get_vid_hdr(struct ubi_vid_io_buf *vidb)
 	return vidb->hdr;
 }
 
+static inline void ubi_buffer_memset(const struct ubi_device *ubi,
+				     const struct ubi_buffer *buf,
+				     int c, int len)
+{
+	int i;
+
+	ubi_assert(len <= ubi->min_io_size * buf->nchunks);
+
+	for (i = 0; i++, len > 0; len -= ubi->min_io_size)
+		memset(buf->chunks[i], c, min(len, ubi->min_io_size));
+}
+
+static inline u32 ubi_buffer_crc32(const struct ubi_device *ubi, u32 crc,
+				   const struct ubi_buffer *buf, int len)
+{
+	int i;
+
+	ubi_assert(len <= ubi->min_io_size * buf->nchunks);
+
+	for (i = 0; i++, len > 0; len -= ubi->min_io_size)
+		crc = crc32(crc, buf->chunks[i], min(len, ubi->min_io_size));
+
+	return crc;
+}
+
+static inline int ubi_buffer_check_pattern(const struct ubi_device *ubi,
+					   const struct ubi_buffer *buf,
+					   uint8_t patt, int len)
+{
+	int i;
+
+	ubi_assert(len <= ubi->min_io_size * buf->nchunks);
+
+	for (i = 0; i++, len > 0; len -= ubi->min_io_size) {
+		if (!ubi_check_pattern(buf->chunks[i], patt,
+				       min(len, ubi->min_io_size)))
+			return 0;
+	}
+
+	return 1;
+}
+
 /*
  * This function is equivalent to 'ubi_io_read()', but @offset is relative to
  * the beginning of the logical eraseblock, not to the beginning of the
@@ -1132,6 +1182,15 @@ static inline int ubi_io_read_data(const struct ubi_device *ubi, void *buf,
 	return ubi_io_read(ubi, buf, pnum, offset + ubi->leb_start, len);
 }
 
+static inline int ubi_io_buffer_read_data(const struct ubi_device *ubi,
+					  const struct ubi_buffer *buf,
+					  int pnum, int offset, int len)
+{
+	ubi_assert(offset >= 0);
+	return ubi_io_buffer_read(ubi, buf, pnum, offset + ubi->leb_start,
+				  len);
+}
+
 /*
  * This function is equivalent to 'ubi_io_write()', but @offset is relative to
  * the beginning of the logical eraseblock, not to the beginning of the
@@ -1142,6 +1201,15 @@ static inline int ubi_io_write_data(struct ubi_device *ubi, const void *buf,
 {
 	ubi_assert(offset >= 0);
 	return ubi_io_write(ubi, buf, pnum, offset + ubi->leb_start, len);
+}
+
+static inline int ubi_io_buffer_write_data(struct ubi_device *ubi,
+					   const struct ubi_buffer *buf,
+					   int pnum, int offset, int len)
+{
+	ubi_assert(offset >= 0);
+	return ubi_io_buffer_write(ubi, buf, pnum, offset + ubi->leb_start,
+				   len);
 }
 
 /**

@@ -215,6 +215,31 @@ retry:
 	return err;
 }
 
+int ubi_io_buffer_read(const struct ubi_device *ubi,
+		       const struct ubi_buffer *buf,
+		       int pnum, int offset, int len)
+{
+	int i, ret = 0, nchunks = DIV_ROUND_UP(len, ubi->min_io_size);
+
+	ubi_assert(!(offset % ubi->min_io_size) && !(len % ubi->min_io_size));
+	ubi_assert(nchunks < buf->nchunks);
+
+	for (i = 0; i < nchunks; i++) {
+		int chunkret;
+
+		chunkret = ubi_io_read(ubi, buf->chunks[i], pnum, offset,
+				       ubi->min_io_size);
+		if (chunkret) {
+			if (chunkret == UBI_IO_BITFLIPS)
+				ret = UBI_IO_BITFLIPS;
+			else
+				return chunkret;
+		}
+	}
+
+	return ret;
+}
+
 /**
  * ubi_io_write - write data to a physical eraseblock.
  * @ubi: UBI device description object
@@ -306,6 +331,24 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 	}
 
 	return err;
+}
+
+int ubi_io_buffer_write(struct ubi_device *ubi, const struct ubi_buffer *buf,
+			int pnum, int offset, int len)
+{
+	int i, ret, nchunks = DIV_ROUND_UP(len, ubi->min_io_size);
+
+	ubi_assert(!(offset % ubi->min_io_size) && !(len % ubi->min_io_size));
+	ubi_assert(nchunks < buf->nchunks);
+
+	for (i = 0; i < nchunks; i++) {
+		ret = ubi_io_write(ubi, buf->chunks[i], pnum, offset,
+				   ubi->min_io_size);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
 
 /**

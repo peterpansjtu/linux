@@ -126,6 +126,22 @@ struct ubi_volume_info {
 };
 
 /**
+ * struct ubi_buffer - UBI buffer data structure.
+ * @chunks: array of chunks of size @min_io_size
+ * @nchunks: @chunks array size
+ *
+ * ubi_buffer is here to address the problems brought by vmalloced buffers.
+ * vmalloced buffers are not DMA-safe and thus might require an extra copy at
+ * the MTD device level if the MTD driver wants to use DMA.
+ * This brings a non-negligible penalty, which can be addressed by creating
+ * chunks of @min_io_size.
+ */
+struct ubi_buffer {
+	void **chunks;
+	int nchunks;
+};
+
+/**
  * struct ubi_sgl - UBI scatter gather list data structure.
  * @list_pos: current position in @sg[]
  * @page_pos: current position in @sg[@list_pos]

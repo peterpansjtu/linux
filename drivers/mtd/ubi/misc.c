@@ -202,3 +202,49 @@ void ubi_err(const struct ubi_device *ubi, const char *fmt, ...)
 	       ubi->ubi_num, __builtin_return_address(0), &vaf);
 	va_end(args);
 }
+
+void ubi_buffer_destroy(struct ubi_buffer *buf)
+{
+	int i;
+
+	if (!buf)
+		return;
+
+	if (buf->chunks) {
+		for (i = 0; i < buf->nchunks; i++)
+			kfree(buf->chunks[i]);
+
+		kfree(buf->chunks);
+	}
+
+	kfree(buf);
+}
+
+struct ubi_buffer *ubi_buffer_create(struct ubi_device *ubi, int len)
+{
+	struct ubi_buffer *buf;
+	int i;
+
+	buf = kzalloc(sizeof(*buf), GFP_KERNEL);
+	if (!buf)
+		return NULL;
+
+	buf->nchunks = DIV_ROUND_UP(len, ubi->min_io_size);
+	buf->chunks = kzalloc(buf->nchunks * sizeof(*buf->chunks), GFP_KERNEL);
+	if (!buf->chunks)
+		goto err;
+
+	for (i = 0; i < buf->nchunks; i++) {
+		buf->chunks[i] = kzalloc(ubi->min_io_size, GFP_KERNEL);
+		if (!buf->chunks[i])
+			goto err;
+	}
+
+	return buf;
+
+err:
+	ubi_buffer_destroy(buf);
+
+	return NULL;
+}
+

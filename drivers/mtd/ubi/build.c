@@ -969,7 +969,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		goto out_free;
 
 	err = -ENOMEM;
-	ubi->peb_buf = vmalloc(ubi->peb_size);
+	ubi->peb_buf = ubi_buffer_create(ubi, ubi->peb_size);
 	if (!ubi->peb_buf)
 		goto out_free;
 
@@ -1054,7 +1054,7 @@ out_detach:
 	ubi_free_internal_volumes(ubi);
 	vfree(ubi->vtbl);
 out_free:
-	vfree(ubi->peb_buf);
+	ubi_buffer_destroy(ubi->peb_buf);
 	vfree(ubi->fm_buf);
 	if (ref)
 		put_device(&ubi->dev);
