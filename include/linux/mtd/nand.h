@@ -566,4 +566,26 @@ static inline struct device_node *nand_get_of_node(struct nand_device *nand)
 {
 	return mtd_get_of_node(&nand->mtd);
 }
+
+/* BBT related functions */
+enum nand_bbt_block_status {
+	NAND_BBT_BLOCK_GOOD,
+	NAND_BBT_BLOCK_WORN,
+	NAND_BBT_BLOCK_RESERVED,
+	NAND_BBT_BLOCK_FACTORY_BAD,
+};
+
+int nand_scan_bbt(struct nand_device *this);
+int nand_update_bbt(struct nand_device *this, loff_t offs);
+int nand_isreserved_bbt(struct nand_device *this, loff_t offs);
+int nand_isbad_bbt(struct nand_device *this, loff_t offs, int allowbbt);
+int nand_markbad_bbt(struct nand_device *this, loff_t offs);
+
+void nand_bbt_update_entry(struct nand_device *this, int eraseblock,
+			   enum nand_bbt_block_status status);
+static inline bool nand_bbt_is_initialized(struct nand_device *this)
+{
+	return !!this->bbt.bbt;
+}
+
 #endif /* __LINUX_MTD_NAND_H */

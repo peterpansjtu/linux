@@ -1059,7 +1059,7 @@ static int __init read_factory_bbt(struct mtd_info *mtd)
 	 * operation after device power-up.  The above read ensures it never is.
 	 * Ugly, I know.
 	 */
-	if (nand->bbt == NULL)  /* no memory-based bbt */
+	if (!nand_bbt_is_initialized(mtd_to_nand(mtd)))
 		goto exit;
 
 	if (mtd->ecc_stats.failed > eccfailed_stats) {
@@ -1086,8 +1086,9 @@ static int __init read_factory_bbt(struct mtd_info *mtd)
 		unsigned long bits = ~buf[i];
 		for_each_set_bit(bitnum, &bits, 8) {
 			int badblock = block + 7 - bitnum;
-			nand->bbt[badblock / 4] |=
-				0x03 << ((badblock % 4) * 2);
+
+			nand_bbt_update_entry(mtd_to_nand(mtd), badblock,
+					      NAND_BBT_BLOCK_FACTORY_BAD);
 			mtd->ecc_stats.badblocks++;
 			dev_notice(doc->dev, "factory-marked bad block: %d\n",
 				   badblock);
