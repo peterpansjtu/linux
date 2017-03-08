@@ -78,6 +78,24 @@ struct nand_device {
 };
 
 /**
+ * struct nand_page_iter - NAND page iterator
+ * @page: the page
+ * @pageoffs: the offset within a page
+ * @dataleft: the left page data to read/write
+ * @ooboffs: the offset within page oob
+ * @oobleft: the left oob data to read/write
+ * @oobbytes_per_page: maximun oob bytes to read/write per page
+ */
+struct nand_page_iter {
+	int page;
+	int pageoffs;
+	size_t dataleft;
+	int ooboffs;
+	size_t oobleft;
+	int oobbytes_per_page;
+};
+
+/**
  * mtd_to_nand - Get the NAND device attached to the MTD instance
  * @mtd: MTD instance
  *
@@ -174,6 +192,81 @@ static inline int nand_per_page_oobsize(struct nand_device *nand)
 {
 	return nand->memorg.oobsize;
 }
+
+/**
+ * nand_page_iter_init - Initialize a NAND page iterator
+ * @nand: NAND device
+ * @offs: absolute offset
+ * @len: page data length to read/write
+ * @ooboffs: oob offset within page
+ * @ooblen: oob data length to read/write
+ * @oobbytes_per_page: oob data can read/write per page
+ * @iter: page iterator
+ */
+static inline void nand_page_iter_init(struct nand_device *nand,
+				       loff_t offs, size_t len, u32 ooboffs,
+				       size_t ooblen, u32 oobbytes_per_page,
+				       struct nand_page_iter *iter)
+{
+	u64 page = offs;
+
+	iter->pageoffs = do_div(page, nand->memorg.pagesize);
+	iter->page = page;
+	iter->dataleft = len;
+	iter->ooboffs = ooboffs;
+	iter->oobleft = ooblen;
+	iter->oobbytes_per_page = oobbytes_per_page;
+}
+
+/**
+ * nand_page_iter_next - Move to the next page
+ * @nand: NAND device
+ * @iter: page iterator
+ */
+static inline void nand_page_iter_next(struct nand_device *nand,
+				       struct nand_page_iter *iter)
+{
+	iter->page++;
+	iter->pageoffs = 0;
+	if (iter->dataleft)
+		iter->dataleft -= min_t (int,
+					 nand_page_size(nand) - iter->pageoffs,
+					 iter->dataleft);
+	if (iter->oobleft)
+		iter->oobleft -= min_t(int,
+				       iter->oobbytes_per_page - iter->ooboffs,
+				       iter->oobleft);
+}
+
+/**
+ * nand_page_iter_end - Should end iteration or not
+ * @nand: NAND device
+ * @iter: page iterator
+ */
+static inline bool nand_page_iter_end(struct nand_device *nand,
+				      struct nand_page_iter *iter)
+{
+	if (iter->dataleft || iter->oobleft)
+		return false;
+	return true;
+}
+
+/**
+ * nand_for_each_page - Iterate nand pages
+ * @nand: NAND device
+ * @start: start address to read/write
+ * @len: page data length to read/write
+ * @ooboffs: oob offset within page
+ * @ooblen: oob data length to read/write
+ * @oobbytes_per_page: oob data can read/write per page
+ * @iter: page iterator
+ */
+#define nand_for_each_page(nand, start, len, ooboffs, ooblen,	\
+			   oobbytes_per_page, iter)	\
+	for (nand_page_iter_init(nand, start, len, ooboffs, ooblen,	\
+				 oobbytes_per_page, iter);	\
+	     !nand_page_iter_end(nand, iter);		\
+	     nand_page_iter_next(nand, iter))
 
 /**
  * nand_per_page_oobsize - Get NAND erase block size
