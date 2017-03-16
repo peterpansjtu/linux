@@ -8610,6 +8610,15 @@ S:	Maintained
 F:	drivers/mtd/nand/
 F:	include/linux/mtd/*nand*.h
 
+SPI NAND FLASH DRIVER
+M:	Peter Pan <peterpandong@micron.com>
+L:	linux-mtd@lists.infradead.org
+W:	http://www.linux-mtd.infradead.org/
+Q:	http://patchwork.ozlabs.org/project/linux-mtd/list/
+S:	Maintained
+F:	drivers/mtd/nand/spi/
+F:	include/linux/mtd/spinand.h
+
 NATSEMI ETHERNET DRIVER (DP8381x)
 S:	Orphan
 F:	drivers/net/ethernet/natsemi/natsemi.c
