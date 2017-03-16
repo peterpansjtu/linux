@@ -1,0 +1,5 @@
+config GENERIC_SPI_NAND
+	tristate "SPI NAND with generic SPI bus Support"
+	depends on MTD_SPI_NAND && SPI
+	help
+	  This is to support SPI NAND device with generic SPI bus.

@@ -3,3 +3,5 @@ menuconfig MTD_SPI_NAND
 	depends on MTD_NAND
 	help
 	  This is the framework for the SPI NAND device drivers.
+
+source "drivers/mtd/nand/spi/controllers/Kconfig"
