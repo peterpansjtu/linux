@@ -101,6 +101,8 @@ struct spinand_manufacturer_ops {
 	bool (*detect)(struct spinand_device *chip);
 	int (*init)(struct spinand_device *chip);
 	void (*cleanup)(struct spinand_device *chip);
+	void (*prepare_op)(struct spinand_device *chip, struct spinand_op *op,
+			   u32 page, u32 column);
 };
 
 struct spinand_manufacturer {
