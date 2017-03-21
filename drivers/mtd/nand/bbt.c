@@ -328,7 +328,7 @@ static int scan_read_oob(struct nand_device *this, uint8_t *buf, loff_t offs,
 			 size_t len)
 {
 	struct mtd_info *mtd = nand_to_mtd(this);
-	struct mtd_oob_ops ops;
+	struct mtd_oob_ops ops = {};
 	int res, ret = 0;
 
 	ops.mode = MTD_OPS_PLACE_OOB;
@@ -369,11 +369,12 @@ static int scan_write_bbt(struct nand_device *this, loff_t offs, size_t len,
 			  uint8_t *buf, uint8_t *oob)
 {
 	struct mtd_info *mtd = nand_to_mtd(this);
-	struct mtd_oob_ops ops;
+	struct mtd_oob_ops ops = {};
 
 	ops.mode = MTD_OPS_PLACE_OOB;
 	ops.ooboffs = 0;
-	ops.ooblen = nand_per_page_oobsize(this);
+	/* oob from caller may be NULL */
+	ops.ooblen = oob ? nand_per_page_oobsize(this) : 0;
 	ops.datbuf = buf;
 	ops.oobbuf = oob;
 	ops.len = len;
@@ -428,13 +429,12 @@ static int scan_block_fast(struct nand_device *this, struct nand_bbt_descr *bd,
 			   loff_t offs, uint8_t *buf, int numpages)
 {
 	struct mtd_info *mtd = nand_to_mtd(this);
-	struct mtd_oob_ops ops;
+	struct mtd_oob_ops ops = {};
 	int j, ret;
 
 	ops.ooblen = nand_per_page_oobsize(this);
 	ops.oobbuf = buf;
 	ops.ooboffs = 0;
-	ops.datbuf = NULL;
 	ops.mode = MTD_OPS_PLACE_OOB;
 
 	for (j = 0; j < numpages; j++) {
@@ -734,11 +734,10 @@ static int write_bbt(struct nand_device *this, uint8_t *buf,
 	uint8_t rcode = td->reserved_block_code;
 	size_t retlen, len = 0;
 	loff_t to;
-	struct mtd_oob_ops ops;
+	struct mtd_oob_ops ops = {};
 
 	ops.ooblen = nand_per_page_oobsize(this);
 	ops.ooboffs = 0;
-	ops.datbuf = NULL;
 	ops.mode = MTD_OPS_PLACE_OOB;
 
 	if (!rcode)
