@@ -111,6 +111,8 @@ struct spinand_manufacturer {
 	const struct spinand_manufacturer_ops *ops;
 };
 
+extern const struct spinand_manufacturer micron_spinand_manufacture;
+
 struct spinand_ecc_engine_ops {
 	void (*get_ecc_status)(struct spinand_device *chip,
 			       unsigned int status, unsigned int *corrected,

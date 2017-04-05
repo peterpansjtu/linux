@@ -1252,7 +1252,9 @@ static int spinand_scan_bbt(struct spinand_device *chip)
 	return nand_scan_bbt(nand);
 }
 
-static const struct spinand_manufacturer *spinand_manufacturers[] = {};
+static const struct spinand_manufacturer *spinand_manufacturers[] = {
+	&micron_spinand_manufacture
+};
 
 /*
  * spinand_manufacturer_detect - detect SPI NAND device by each manufacturer
